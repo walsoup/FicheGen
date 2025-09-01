@@ -409,7 +409,7 @@ def teacher_fiche_prompt(lesson_text, lesson_topic, class_level):
        - - phrase complète 2…
     4. **Évaluation**
        - Décrire les outils (questions orales, exercices écrits, etc.).
-    5. **Remarques**
+    5. **Remarques et conclusion**
        - Consignes simples, s'appuyer sur le manuel, encourager la participation.
     """
     example_fiche = """
@@ -421,13 +421,14 @@ def teacher_fiche_prompt(lesson_text, lesson_topic, class_level):
     Objectif : Faire connaître aux élèves nos cinq principaux organes sensoriels...
     Déroulement: Pour commencer, je demande aux élèves de bien observer... je pose la question... je demande aux élèves de prendre leur livres page 8... Je passe vérifier les réponses. Je lis la consigne de l'exercice 2... Je demande aux élèves d'observer les images dans le manuel... Je distribue les fiches d'activités... Je passe vérifier les réponses... Pour conclure, je résume les points clés...
     (Le style est direct, utilise "je", et les actions sont concrètes.)
+    Conclusion du cours (Le résumé bref de 2-4 lignes que les élèves doivent écrire dans leur cahiers à la fin de la leçon) : (Basée sur les objectifs de la leçon, en général, un résumé de ce que les élèves ont appris.)
     """
     return f"""Tu es un assistant expert pour les enseignants du primaire au Maroc. Ta tâche est de créer une "Fiche Pédagogique" claire, engageante et structurée en français.
 
 **MISSION:**
 Crée une fiche pédagogique complète pour la leçon "{lesson_topic}" pour la classe de {class_level}.
 
-**MATÉRIEL SOURCE (Texte du manuel scolaire que tu dois t'en baser, car suivre le program pedagogique est essensiel, mais aussi creer un atmosphere d'education, qui respecte l'enchainement de la lesson et le rhytme auquel les eleves peuvent se ressentire confortables et pas accablés):**
+**MATÉRIEL SOURCE (Texte du manuel scolaire sur lequel tu dois te baser, car suivre le programme pédagogique est essentiel, mais aussi créer une atmosphère d'éducation, qui respecte l'enchaînement de la leçon et le rythme auquel les élèves peuvent se sentir confortables et pas accablés):**
 ---
 {lesson_text}
 ---
