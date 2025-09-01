@@ -14,6 +14,25 @@ from streamlit_option_menu import option_menu
 
 load_dotenv()
 
+# Prefer Streamlit secrets (TOML on Streamlit Cloud) with env fallback
+def _get_secret(name: str, *nested_sections: str) -> str:
+    """Fetch a secret from st.secrets, supporting optional nested sections, with os.getenv fallback."""
+    try:
+        # flat key at root
+        if name in st.secrets:
+            return str(st.secrets[name])
+        # support a few common nested sections: [api], [keys], [secrets]
+        for sect in ("api", "keys", "secrets") + nested_sections:
+            try:
+                sect_dict = st.secrets.get(sect)  # type: ignore[attr-defined]
+            except Exception:
+                sect_dict = None
+            if isinstance(sect_dict, dict) and name in sect_dict:
+                return str(sect_dict[name])
+    except Exception:
+        pass
+    return os.getenv(name, "")
+
 # =========================
 # Models and defaults (per your list)
 # =========================
@@ -301,15 +320,32 @@ class PDF(FPDF):
 # =========================
 def get_ai_client(api_provider: str, key_openrouter: str = "", key_gemini: str = ""):
     if "OpenRouter" in api_provider:
-        api_key = key_openrouter or os.getenv("OPENROUTER_API_KEY", "")
+        # Streamlit Cloud: secrets first, then sidebar input, then env
+        api_key = key_openrouter or _get_secret("OPENROUTER_API_KEY")
         if not api_key:
-            st.error("OpenRouter API key missing. Add it in Options avancées.")
+            st.error("OpenRouter API key missing. Add it in Options avancées or set OPENROUTER_API_KEY in secrets.")
             return None, None
-        return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key), "openrouter"
+        # Helpful headers for OpenRouter (avoid 401 and identify your app)
+        referer = _get_secret("APP_PUBLIC_URL") or os.getenv("STREAMLIT_PUBLIC_URL", "")
+        app_title = _get_secret("APP_NAME") or "FicheGen"
+        default_headers = {k: v for k, v in {
+            "HTTP-Referer": referer,
+            "X-Title": app_title,
+        }.items() if v}
+        try:
+            client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=api_key,
+                default_headers=default_headers or None,
+            )
+        except Exception as e:
+            st.error(f"Échec initialisation OpenRouter: {e}")
+            return None, None
+        return client, "openrouter"
     elif "Gemini" in api_provider:
-        api_key = key_gemini or os.getenv("GEMINI_API_KEY", "")
+        api_key = key_gemini or _get_secret("GEMINI_API_KEY")
         if not api_key:
-            st.error("Gemini API key missing. Add it in Options avancées.")
+            st.error("Gemini API key missing. Add it in Options avancées or set GEMINI_API_KEY in secrets.")
             return None, None
         genai.configure(api_key=api_key)
         return genai.GenerativeModel(GEMINI_MODEL), "gemini"
@@ -328,7 +364,12 @@ def llm_call(client, client_type, prompt: str, model_name: str | None):
             resp = client.generate_content(prompt)
             return resp.text
     except Exception as e:
-        st.error(f"AI API Error: {e}")
+        # Provide clearer guidance for common OpenRouter auth issues
+        msg = str(e)
+        if client_type == "openrouter" and ("401" in msg or "User not found" in msg):
+            st.error("OpenRouter auth failed (401). Vérifiez votre OPENROUTER_API_KEY dans Secrets et, si nécessaire, définissez APP_PUBLIC_URL (URL publique de l'app) et APP_NAME.")
+        else:
+            st.error(f"AI API Error: {e}")
     return None
 
 # =========================
