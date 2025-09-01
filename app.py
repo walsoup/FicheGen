@@ -390,7 +390,7 @@ def get_pages_from_toc_prompt(toc_text, lesson_topic):
     Analyze the table of contents and find the page or range of pages corresponding to the lesson topic.
     Respond with ONLY the page numbers.
     - If it's a single page, respond with the number (e.g., "42").
-    - If it's a range of pages (most common), find the start page for "{lesson_topic}" and the start page for the *next* lesson, then subtract one. Respond with a dash (e.g., "42-46").
+    - If it's a range of pages (which is most common), find the start page for "{lesson_topic}" and the start page for the *next* lesson, then subtract one. Respond with a dash (e.g., "42-46").
     Do NOT add any other words, sentences, or explanations. Just the numbers.
     """
 
@@ -419,7 +419,7 @@ def teacher_fiche_prompt(lesson_text, lesson_topic, class_level):
     Durée : 45 min.
     Classe : C.P.
     Objectif : Faire connaître aux élèves nos cinq principaux organes sensoriels...
-    Déroulement: Pour commencer, je demande aux élèves de bien observer... je pose la question...
+    Déroulement: Pour commencer, je demande aux élèves de bien observer... je pose la question... je demande aux élèves de prendre leur livres page 8... Je passe vérifier les réponses. Je lis la consigne de l'exercice 2... Je demande aux élèves d'observer les images dans le manuel... Je distribue les fiches d'activités... Je passe vérifier les réponses... Pour conclure, je résume les points clés...
     (Le style est direct, utilise "je", et les actions sont concrètes.)
     """
     return f"""Tu es un assistant expert pour les enseignants du primaire au Maroc. Ta tâche est de créer une "Fiche Pédagogique" claire, engageante et structurée en français.
@@ -427,7 +427,7 @@ def teacher_fiche_prompt(lesson_text, lesson_topic, class_level):
 **MISSION:**
 Crée une fiche pédagogique complète pour la leçon "{lesson_topic}" pour la classe de {class_level}.
 
-**MATÉRIEL SOURCE (Texte du manuel scolaire):**
+**MATÉRIEL SOURCE (Texte du manuel scolaire que tu dois t'en baser, car suivre le program pedagogique est essensiel, mais aussi creer un atmosphere d'education, qui respecte l'enchainement de la lesson et le rhytme auquel les eleves peuvent se ressentire confortables et pas accablés):**
 ---
 {lesson_text}
 ---
@@ -437,7 +437,7 @@ Crée une fiche pédagogique complète pour la leçon "{lesson_topic}" pour la c
 {fiche_structure}
 ---
 
-**EXEMPLE DE STYLE À IMITER:**
+**EXEMPLE DE STYLE À IMITER (Ceci est un excellent exemple que tu dois imiter, le professeur ici commence par interagire avec les élèves):**
 ---
 {example_fiche}
 ---
@@ -448,8 +448,10 @@ Crée une fiche pédagogique complète pour la leçon "{lesson_topic}" pour la c
 3. Adopte le ton et le style de l'EXEMPLE: direct, pratique, et utilisant "je" pour décrire les actions de l'enseignant.
 4. Sois créatif mais fidèle: activités engageantes, mais conformes au manuel.
 5. Formatage Markdown: sous-titres de phase au format `### Titre de phase (X min)` puis des puces phrases complètes.
-6. Reste faisable en 45 min pour le déroulement.
+6. Reste faisable en 45 min pour le déroulement, realistiquement, ca entaille 30 minutes de class, et le rest est vide, ne notte pas ces moments vide, mais reste conscient d'eux, on a besoin d'un rhythme et avencement realiste dans la classe.
 7. Commence directement, sans phrases d'introduction.
+8. Utilise des transitions claires entre les activités pour maintenir l'attention des élèves.
+9. Réfère-toi aux activités/exercices dans le manuel. (e.x. Je demande aux élèves de prendre leur livre page X… EX Y... Je lis la consigne de l'exercice Y... Je demande aux élèves d'observer les images dans le manuel... etc)
 """
 
 def student_notes_prompt(lesson_text, topic, class_level):
