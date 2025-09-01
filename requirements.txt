@@ -1,0 +1,7 @@
+streamlit
+python-dotenv
+fpdf2
+pdfplumber
+openai>=1.0.0
+google-generativeai
+streamlit-option-menu
